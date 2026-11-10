@@ -9,10 +9,10 @@ These extensions address the complexity of weakly‑typed or deeply‑nested tes
 ### Included Projects (4 Repository Sub‑Folders)
 | Folder | Product | Target API |
 |---|---|---|
-| `Native API Automation Helper` | Viavi TestCenter | Native Python (StcPython) API |
+| `TestCenter Native API Automation Helper` | Viavi TestCenter | Native Python (StcPython) API |
 | `ONE LabPro pyapi Automation Helper` | Viavi ONE LabPro | ONE LabPro Python Object‑Tree API |
-| `RESTful API Automation Helper` | Viavi TestCenter | TestCenter REST HTTP API |
-| `Snappi API Automation Helper` | Viavi TestCenter | Open Traffic Generator Snappi API |
+| `TestCenter RESTful API Automation Helper` | Viavi TestCenter | TestCenter REST HTTP API |
+| `TestCenter Snappi API Automation Helper` | Viavi TestCenter | Open Traffic Generator Snappi API |
 
 > **ONE LabPro**: VIAVI high‑speed Ethernet test platform for high‑rate interface testing, PHY/FEC validation, L2‑L3 traffic simulation, transceiver management and AI‑HPC network test scenarios.
 
@@ -68,9 +68,9 @@ Type the complete snippet prefix name, then press `Tab` to expand into runnable 
 > ⚠️ All helpers are **pure front‑end syntax‑assistance tools**. They do NOT contain test runtime engine. Generated Python scripts require separate runtime environment to execute properly.
 
 Each extension corresponds to its own runtime dependencies:
-- **Native API Helper**: Requires Viavi TestCenter environment and accessible test chassis.
-- **RESTful API Helper**: Requires `stcrestclient` Python library and running TestCenter Lab Server.
-- **Snappi API Helper**: Requires `snappi` Python package and accessible TestCenter OTG service endpoint.
+- **TestCenter Native API Helper**: Requires Viavi TestCenter environment and accessible test chassis.
+- **TestCenter RESTful API Helper**: Requires `stcrestclient` Python library and running TestCenter Lab Server.
+- **TestCenter Snappi API Helper**: Requires `snappi` Python package and accessible TestCenter OTG service endpoint.
 - **ONE LabPro pyapi Helper**: Requires ONE LabPro Python SDK and reachable ONE LabPro controller.
 
 > Extensions themselves work completely offline. All API schema and snippet resources are packaged inside VSIX, no network connection needed for auto‑completion and hover documentation.
@@ -78,10 +78,10 @@ Each extension corresponds to its own runtime dependencies:
 ## Repository Structure
 ```
 VS‑Code‑Automation‑Helper/
-├── Native API Automation Helper/         # Source for TestCenter Native Python helper
+├── TestCenter Native API Automation Helper/         # Source for TestCenter Native Python helper
 ├── ONE LabPro pyapi Automation Helper/    # Source for ONE LabPro pyapi helper
-├── RESTful API Automation Helper/         # Source for TestCenter REST API helper
-└── Snappi API Automation Helper/          # Source for Snappi OTG API helper
+├── TestCenter RESTful API Automation Helper/         # Source for TestCenter REST API helper
+└── TestCenter Snappi API Automation Helper/          # Source for Snappi OTG API helper
 ```
 Each sub‑directory is a fully independent VS Code extension project, including source code, API schema files, snippet definitions, per‑component readme documents and build scripts for generating `.vsix` packages.
 
@@ -89,7 +89,7 @@ Each sub‑directory is a fully independent VS Code extension project, including
 > Require Node.js and `vsce` toolchain.
 ```bash
 # Enter target extension folder
-cd "Native API Automation Helper"
+cd "TestCenter Native API Automation Helper"
 npm install
 vsce package
 ```
