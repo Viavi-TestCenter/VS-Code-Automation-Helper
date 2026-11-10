@@ -1,0 +1,180 @@
+================================================================================
+Viavi TestCenter Native Python API VS Code Helper 发布说明
+版本：2.0.0
+发布日期：2026-06-05
+================================================================================
+
+一、 概述 (Overview)
+--------------------
+Viavi TestCenter Native Python API VS Code Helper 是一款专为 Viavi TestCenter 
+原生 Python API 自动化脚本编写而设计的编辑器扩展插件。通过深度解析原生数据模型
+（Schema），本扩展在主流基于 VS Code 架构的编辑器中，提供了精准的代码自动补全、
+上下文句柄类型推导、结构化悬停文档提示（Hover Doc）以及覆盖高频测试场景的内置
+代码片段模板（Snippets）。
+
+本工具基于完备的静态数据字典与智能推导引擎，旨在显著降低因底层弱类型 API 带来的
+手册查阅开销，从而提升测试脚本的交付质量与协议仿真开发效率。
+
+支持的编辑器环境（均支持本地离线 VSIX 安装）：
+- VS Code / Trae / Cursor / Qoder / Code Buddy
+
+
+二、 功能覆盖与特性 (Feature Coverage & Characteristics)
+--------------------------------------------------------
+
+1. 核心 API 方法封装
+   本工具完整封装了 Viavi TestCenter API 的 17 个核心方法。在 Python 上下文中
+   输入 `stc.` 即可瞬间生成带参数占位符的标准方法结构：
+   - apply              提交并应用当前测试配置到机箱。
+   - config             设置或修改一个或多个对象的属性或关联关系。
+   - connect            建立与指定 Viavi TestCenter 机箱的连接。
+   - create             创建指定的自动化对象（例如：Project, Port, StreamBlock）。
+   - delete             从当前测试配置中删除指定的对象句柄。
+   - disconnect         断开与指定 Viavi TestCenter 机箱的连接。
+   - get                获取对象的属性值、只读数据或子对象句柄。
+   - help / help_list   查询数据模型和 API 命令以获取帮助信息。
+   - log                向日志或标准输出写入指定严重级别的诊断信息。
+   - perform            执行特定的 Viavi TestCenter 命令（如 AttachPortsCommand）。
+   - reserve / release  占用或释放指定的物理端口组（Port List）。
+   - sleep              挂起当前自动化脚本的执行（单位：秒）。
+   - subscribe          订阅并开启实时测试结果数据集的采集。
+   - unsubscribe        移除或取消先前已建立的结果订阅。
+   - waitUntilComplete  阻塞执行，直到当前测试或异步命令完全结束。
+
+2. 高频内置代码模板 (Snippets)
+   输入快捷前缀并按下 `Tab` 键，即可快速部署完整可执行的生产级测试框架。
+   本版本共封装了 22 个核心模板：
+   
+   (1) 基础流量模板（直接配置 StreamBlock）：
+       - !RawStreamBlockAndPortResult  
+         标准端到端框架：包含拓扑映射、端口创建、基础流配置、流量控制及
+         Tx/Rx 统计指标提取。
+       - !RawStreamAutoFrame_InsertSig  自动帧长 + 签名域字段插入配置。
+       - !RawStreamPRBS_FCS             PRBS 填充 + FCS 校验流配置。
+       - !RawStreamFixedFrame_TTL       固定帧长 + TTL 字段动态调整。
+       - !RawStreamINCR_NoSig           递增帧长 + 无签名（No-Sig）模式。
+       - !RawStreamRANDOMFrame_CONSTANT 随机帧长 + 恒定负载速率配置。
+       - !RawStreamDetailResult         固定帧长双向流 + 双端流统计。
+
+   (2) 绑定流量模板（StreamBlock 绑定到仿真设备）：
+       - !BoundStreamFixed              固定速率的设备绑定流配置。
+       - !BoundStreamPAIR_INCR          设备对递增绑定流框架。
+       - !BoundStreamAUTO_ByPass        自动旁路绑定流配置。
+       - !BoundStreamPortBasedLoad      基于端口负载分配的绑定流模板。
+       - !BoundStreamRANDOM_Bidir       随机帧长双向绑定流生成。
+
+   (3) 仿真设备模板（协议栈仿真）：
+       - !BasicIPv4EmulatedDevice       基础静态 IPv4 仿真网络设备配置。
+       - !L2Device                      纯二层 MAC 仿真设备与流控拓扑。
+       - !IPv4BGPDevice                 IPv4 BGP 双设备对邻居 + 高级路由块配置。
+       - !DHCPv4ServerClientDevice      DHCPv4 服务器与客户端完整交互仿真。
+       - !OSPFv2DeviceLSAConfig         OSPFv2 动态邻居 + 多类 LSA 路由通告配置。
+       - !ISISDevice                    IS-IS Level-2 骨干网路由协议仿真。
+       - !DeviceCount                   设备批量向外扩展（Scale-out）与步进配置。
+       - !OnePortMultiDevices           单物理端口上叠加多协议/多应用栈。
+       - !DevicePing_Routerid           通过 Router ID 触发内置的协议层 Ping 工具。
+       - !DevicePing_Prefixlen          通过网段前缀触发大规模路由网络可达性检查。
+
+3. 静态 Schema 与上下文推导引擎
+   针对底层 API 弱类型的特点，本工具实现了一套强大的 AST（抽象语法树）向上推导
+   引擎，从根本上消除了不同对象间属性名同名的冲突问题：
+   - 创建推导：若输入 `stc.config(hPortTx, )`，本工具会向上追溯定位到 
+     `hPortTx = stc.create("port", ...)`，从而锁定 `hPortTx` 为 `port` 实体，
+     并限定后续补全仅提示该对象独有的可写属性（例如：UseDefaultHost=）。
+   - 检索推导：新增对子对象关联关系的推导支持。若句柄通过关联关系获取 
+     （如 `hGenerator = stc.get(hPort, "children-Generator")`），本工具能够
+     准确将其识别为 `Generator` 实体，并在后续调用中精准提示其计数器与配置属性。
+
+4. 智能化自动补全
+   当本工具检测到语法上下文中包含 `stc.` 调用时，会自动筛选并提供精准的候选建议：
+   - 对象类型提示：在 `stc.create("` 内部，自动触发所有 Viavi TestCenter 
+     对象类名的补全（如 StreamBlock, BgpRouterConfig, Dhcpv4BlockConfig 等）。
+   - 命令提示：在 `stc.perform("` 内部，自动列出所有可用的系统命令，并附带官方
+     Markdown 格式的中文/英文描述（如 AttachPortsCommand, CaptureDataSaveCommand）。
+   - 自动导包插入：首次补全 `stc.` 方法时，本工具将在文件顶部（第 0 行）无感
+     插入标准的初始化导包语句：
+     from StcPython import StcPython
+     stc = StcPython()
+
+5. 结构化悬停文档提示 (Hover Provider)
+   将鼠标悬停在 Python 脚本中的方法、对象类、属性或命令上时，会弹出一个精美的 
+   Markdown 浮窗。每个属性文档都经过了精准的字段提取解析：
+   - 层级与规范：采用统一、清晰的卡片式视觉排版。
+   - 元数据行：直观提取并展示 **Type**（类型，如 bool, u32, handle）与 **Default**
+     （默认值），同时包含有效的枚举可选值（Values）及过时（Deprecated）标记。
+   - 描述文本：剥离了原始字典数据中的冗余标点，呈现干净、易读的官方说明。
+
+
+三、 协议与结果对象支持范围 (Protocol & Results Object Range)
+--------------------------------------------------------------
+本工具的底层数据完全覆盖了以下测试领域：
+- 路由协议：BGP（含 EVPN / MVPN / FlowSpec 完整扩展）、OSPFv2/v3、IS-IS。
+- 接入协议：DHCPv4/v6（完整的客户端状态机及服务器响应仿真）。
+- 流量模型：基础流（Raw StreamBlocks）、绑定流（Bound StreamBlocks）以及复杂的
+  双向、非对称、多网格（Multi-mesh）流量场景。
+- 结果对象：端口级（物理计数器）、流级（动态接收端流指标）以及协议会话级（会话
+  状态、协议报文计数器）结果数据集。
+
+
+四、 安装指南（离线 VSIX 方式） (Installation Guide)
+----------------------------------------------------
+所有受支持的 VS Code 架构编辑器均遵循一致的本地安装步骤：
+1. 打开编辑器，进入扩展面板（快捷键 `Ctrl+Shift+X` 或 macOS 上的 `Cmd+Shift+X`）。
+2. 点击扩展面板右上角的更多操作图标（**`···`**）。
+3. 从下拉菜单中选择 **"Install from VSIX..."**（从 VSIX 安装...）。
+4. 浏览并选中目标 `.vsix` 插件文件，点击安装，随后重启编辑器即可。
+
+
+五、 基本工作流与代码示例 (Basic Workflow & Code Example)
+----------------------------------------------------------
+在任意已激活的 `.py` 文件中，即可享受流畅、无中断的脚本编写体验：
+
+  from StcPython import StcPython
+  stc = StcPython()
+
+  # 1. 输入 'stc.create("' 触发全局对象类型补全列表。选择 "Project"。
+  hProject = stc.create("Project", under="system1")
+
+  # 2. 定义端口句柄
+  hPortTx = stc.create("port", under=hProject, location="//192.168.1.10/1/1")
+
+  # 3. 编写 'config' 时，上下文推导引擎自动将 'hPortTx' 锁定为 'port' 类型。
+  # 端口特有的可写属性立即弹出，并自动附加等号。
+  stc.config(hPortTx, UseDefaultHost="False")
+
+  # 4. 命令自动补全：输入 'stc.perform("' 即可拉取系统命令并补全内部参数。
+  stc.perform("AttachPortsCommand", PortList=hPortTx, AutoConnect=True)
+
+
+六、 技术支持、功能增强与持续规划 (Support & Roadmap)
+-----------------------------------------------------
+1. 持续更新与演进
+   我们致力于该扩展工具的长期维护与迭代升级。在未来的版本中，我们将持续更新数据
+   字典以对齐新发布的 Viavi TestCenter 软件版本，并引入更深层次的语义分析功能。
+   此外，我们还将积极扩充内置的代码片段库（Snippets），持续增添新的生产级代码模板，
+   以覆盖更广泛、更复杂的测试工作流。
+
+2. 技术支持与问题反馈
+   您的反馈对本工具的改进至关重要。如果您遇到任何 Bug、需要技术协助或希望提出
+   新功能建议，请随时联系我们的技术支持团队：
+   
+   - **技术支持邮箱：** EastAsia.HSESupport@viavisolutions.com
+   
+   欢迎就以下事项与我们联系：
+   - **问题缺陷报告（Bug Reports）：** 补全失效、悬停提示错误或语法解析异常。
+   - **功能增强请求（Feature Requests）：** 工具链结构性改进或新功能扩展。
+   - **新模板/协议需求提交（Snippet Submissions）：** 希望在后续版本中获得支持
+     的典型测试场景、代码片段模板或特定协议定义。
+
+
+七、 注意事项与环境前提 (Important Notes & Prerequisites)
+---------------------------------------------------------
+1. 懒激活机制
+   为了保持编辑器的轻量化和响应速度，本工具采用了懒加载架构。只有当用户实际打开
+   以 `.py` 结尾的 Python 文件时，它才会激活并加载 Schema 字典，确保日常普通编码
+   期间零常驻内存占用。
+
+2. 使用前提
+   - 本扩展严格作为前端语法辅助工具运行。本地或远程开发环境必须安装有官方的 
+     Viavi TestCenter 客户端软件（以满足脚本运行时对 `StcPython` 底层动态链接库
+     的依赖）。
